@@ -4,24 +4,35 @@ import Logo from "../components/Logo";
 import accountCircle from "../assets/account_circle.svg";
 import { useUser } from "../context/UserContext";
 import { supabase } from "../supabaseClient";
+import StatsPanel from "../components/StatsPanel";
 
 function Header() {
-  const { tokens } = useUser();
+  const { user, loading: userLoading, tokens, isPaid } = useUser();
   const [isSuperUser, setIsSuperUser] = useState(false);
 
   useEffect(() => {
     async function checkSuperUser() {
+      if (userLoading || !user) {
+        setIsSuperUser(false);
+        return;
+      }
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsSuperUser(user?.email === 'arshanand2524@gmail.com');
+        const { data, error } = await supabase
+          .from("superusers")
+          .select("user_id")
+          .eq("user_id", user.id);
+        
+        if (error) throw error;
+        
+        // Check if there are any matching records
+        setIsSuperUser(data && data.length > 0);
       } catch (error) {
-        console.error('Error checking superuser status:', error);
+        console.error("Superuser lookup error:", error.message);
         setIsSuperUser(false);
       }
     }
-
     checkSuperUser();
-  }, []);
+  }, [user, userLoading]);
 
   return (
     <header>
@@ -50,12 +61,20 @@ function Header() {
           <li>
             <Link to="/complaints">Make a Complaint</Link>
           </li>
-
         </ul>
         <ul className="right-links">
-          <li>
-            <Link to="/tokens">🪙 {tokens}</Link>
-          </li>
+          {isPaid && (
+            <li className="stats-summary">
+              <Link to="/tokens">
+                🪙 {tokens} tokens available
+              </Link>
+            </li>
+          )}
+          {!isPaid && (
+            <li>
+              <Link to="/tokens">🪙 {tokens}</Link>
+            </li>
+          )}
           <li>
             <Link to="/account">
               <img
@@ -73,11 +92,15 @@ function Header() {
 }
 
 function MainLayout() {
+  const { isPaid } = useUser();
+  
   return (
-    <>
+    <div className="app-container">
       <Header />
-      <Outlet />
-    </>
+      <main className={isPaid ? 'paid-user' : 'free-user'}>
+        <Outlet />
+      </main>
+    </div>
   );
 }
 

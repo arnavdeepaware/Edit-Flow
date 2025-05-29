@@ -36,10 +36,17 @@ header {
   color: white;
   padding: 0px 40px;
   margin-bottom: 5px;
+  font-weight: bold;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header .logo .title {
-  font-size: large
+  font-size: large;
 }
 
 header .logo img {
@@ -66,8 +73,72 @@ a {
   border: none;
 }
 
-header {
+/* Stats Panel Styles */
+.stats-panel {
+  background-color: rgba(18, 85, 151, 0.9);
+  padding: 0.75rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stats-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2.5rem;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+  font-size: 1.5rem;
   font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* User type specific styles */
+.paid-user header {
+  border-bottom: 2px solid #ffd700;
+}
+
+.free-user header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stats-summary {
+  font-weight: bold;
+  color: #ffd700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Add token icon style */
+.token-icon {
+  font-size: 1.2rem;
+  color: #ffd700;
 }
 
 button {
@@ -85,6 +156,14 @@ button {
 button:active {
   transform: scale(0.95);
   box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+li {
+  list-style: none;
+}
+
+.flex {
+  display: flex;
 }
 
 .username {
@@ -151,3 +230,61 @@ button:active {
   padding: 5px;
   outline: none;
 }
+
+/* Add after existing styles */
+.nav-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-stat:last-of-type {
+  margin-right: 1rem;
+}
+
+.nav-stat-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.nav-stat-label {
+  font-size: 0.7rem;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Add these styles for fixed header */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Add padding to main content to account for fixed header */
+main {
+  margin-top: 64px; /* Adjust based on your header height */
+  flex: 1;
+  padding: 1rem;
+}
+
+/* Update existing editor styles */
+.editor-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.editor.panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.home-page .panel .text-block-input {
+  height: 10vh;
+}
+

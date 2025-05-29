@@ -1,9 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_KEY
+)
 
 export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -15,7 +15,7 @@ export async function signInWithGoogle() {
 }
 
 export async function getAllUsers() {
-  const { data, error } = await supabase.from("users").select("id, username");
+  const { data, error } = await supabase.from("users").select();
 
   if (error) {
     console.error("Error getting users:", error);
@@ -103,19 +103,19 @@ export async function getSharedDocumentIds(userId) {
 export async function getDocumentById(id) {
   try {
     const { data, error } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', id)
+      .from("documents")
+      .select("*")
+      .eq("id", id)
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching document:', error);
+      console.error("Error fetching document:", error);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Error fetching document:', error);
+    console.error("Error fetching document:", error);
     return null;
   }
 }
@@ -126,6 +126,37 @@ export async function incrementTokens(amount) {
   if (error) {
     console.error("Failed to increment tokens:", error.message);
   }
+}
+
+export async function deductTokensOnUser(userId, amount) {
+  // First check current token balance
+  const { data: userData, error: fetchError } = await supabase
+    .from("users")
+    .select("tokens")
+    .eq("id", userId)
+    .single();
+
+  if (fetchError) {
+    console.error("Failed to fetch user tokens:", fetchError.message);
+    return false;
+  }
+
+  if (userData.tokens < amount) {
+    console.error("Insufficient tokens");
+    return false;
+  }
+
+  const { error } = await supabase.rpc("deduct_tokens_on_user", {
+    user_id: userId,
+    amount: amount,
+  });
+
+  if (error) {
+    console.error("Failed to deduct tokens:", error.message);
+    return false;
+  }
+
+  return true;
 }
 
 export async function createDocument(userId, text, title) {
@@ -315,4 +346,97 @@ export async function makeComplaint(complainantId, respondentId, text) {
   }
 
   return data;
+}
+
+export async function getBlacklistWords() {
+  const { data, error } = await supabase.from("blacklist").select("word");
+
+  if (error) {
+    console.error("Error getting blacklist words:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getComplaints() {
+  const { data, error } = await supabase
+    .from("complaints")
+    .select(
+      `
+      *,
+      complainant:complainant_id(username),
+      respondent:respondent_id(username)
+    `
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching complaints:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getComplaintsByRespondentId(userId) {
+  const { data, error } = await supabase
+    .from("complaints")
+    .select(`
+      *,
+      complainant:users!complainant_id ( username )
+    `)
+    .eq("respondent_id", userId)
+    .eq("status", "unresolved")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching complaints for user:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function respondToComplaint(complaintId, text) {
+  const { error } = await supabase
+    .from("complaints")
+    .update({ respondent_note: text })
+    .eq("id", complaintId);
+
+  if (error) {
+    console.error("Error responding to complaint:", error);
+    return false;
+  }
+
+  return true;
+}
+
+export async function resolveComplaint(complaintId) {
+  const { data, error } = await supabase
+    .from("complaints")
+    .update({
+      status: "resolved"
+    })
+    .eq("id", complaintId)
+    .select();
+
+  if (error) {
+    console.error("Error resolving complaint:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function manageUserTokens(userId, amount) {
+  const { error } = await supabase.rpc("manage_user_tokens", {
+    user_id: userId,
+    amount: amount,
+  });
+
+  if (error) {
+    console.error("Failed to manage tokens:", error.message);
+    throw error;
+  }
 }

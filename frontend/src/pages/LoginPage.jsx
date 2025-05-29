@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Logo from "../components/Logo";
 import { signInWithGoogle } from "../supabaseClient";
 import { useUser } from "../context/UserContext";
@@ -7,6 +7,14 @@ import { useNavigate } from "react-router";
 function LoginPage() {
   const navigate = useNavigate();
   const { signInAsGuest } = useUser();
+  const [guestBlocked, setGuestBlocked] = useState(false);
+
+  useEffect(() => {
+    const blockedUntil = parseInt(localStorage.getItem("guestBlockedUntil") || '0');
+    if (blockedUntil && Date.now() < blockedUntil) {
+      setGuestBlocked(true);
+    }
+  }, []);
 
   function handleGoogleSignIn() {
     signInWithGoogle().catch((error) => {
@@ -15,6 +23,11 @@ function LoginPage() {
   }
 
   function handleGuestSignIn() {
+    const blockedUntil = parseInt(localStorage.getItem("guestBlockedUntil") || '0');
+    if (blockedUntil && Date.now() < blockedUntil) {
+      alert("You are locked out for 3 minutes.");
+      return;
+    }
     signInAsGuest();
     navigate("/");
   }
@@ -44,8 +57,9 @@ function LoginPage() {
             type="button"
             className="guest-sign-in-btn"
             onClick={handleGuestSignIn}
+            disabled={guestBlocked}
           >
-            Sign in as guest
+            {guestBlocked ? "Guest login locked" : "Sign in as guest"}
           </button>
         </form>
       </main>

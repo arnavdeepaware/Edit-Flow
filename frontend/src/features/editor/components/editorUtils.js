@@ -19,6 +19,20 @@ export async function fetchShakesperize(text) {
   return data.text;
 }
 
+export function censorText(text, words) {
+  if (!words) return text;
+
+  let censoredText = text;
+  for (const word of words) {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // escape regex special chars
+    const regex = new RegExp(`\\b${escaped}\\b`, "gi");
+    censoredText = censoredText.replace(regex, "*".repeat(word.length));
+  }
+
+  return censoredText;
+}
+
+
 export function getCorrectionSegments(text, errors) {
   // Create segments by splitting at error locations
   let segments = [];
@@ -44,7 +58,7 @@ export function getCorrectionSegments(text, errors) {
       text: text.slice(errorStart, errorStart + error.length),
       type: "error",
       correction: errors[errorIndex].correction,
-      status: "pending"
+      status: "pending",
     });
 
     textIndex = errorStart + error.length;

@@ -22,6 +22,8 @@ function ComplaintsPage() {
     setSelectedUser("");
   }
 
+  if (!user) return <div>Please sign in to make complaints.</div>;
+
   return (
     users && (
       <div className="complaints-page">
@@ -36,7 +38,7 @@ function ComplaintsPage() {
               <option value="">Select User</option>
               {users.map(
                 (otherUser) =>
-                  otherUser.id !== user.id && (
+                  /* otherUser.id !== user.id */ true  && (
                     <option key={otherUser.id} value={otherUser.id}>
                       {otherUser.username}
                     </option>

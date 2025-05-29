@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { useUser } from '../context/UserContext';
 
 function SuperUserRoute({ children }) {
-  const [isSuperUser, setIsSuperUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: userLoading } = useUser();
+  const [isSuperUser, setIsSuperUser] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     async function checkSuperUser() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsSuperUser(user?.email === 'arshanand2524@gmail.com');
-      } catch (error) {
-        console.error('Error checking superuser status:', error);
+      if (userLoading) return;
+      if (!user) {
         setIsSuperUser(false);
-      } finally {
-        setLoading(false);
+        setChecking(false);
+        return;
       }
+      const { data, error } = await supabase
+        .from('superusers')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single();
+      if (error) console.error('Checking superuser table failed:', error.message);
+      setIsSuperUser(!!data);
+      setChecking(false);
     }
 
     checkSuperUser();
-  }, []);
+  }, [user, userLoading]);
 
-  if (loading) {
+  if (userLoading || checking) {
     return <div className="p-4">Loading...</div>;
   }
 
@@ -33,4 +40,4 @@ function SuperUserRoute({ children }) {
   return children;
 }
 
-export default SuperUserRoute; 
+export default SuperUserRoute;

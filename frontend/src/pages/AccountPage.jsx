@@ -3,7 +3,7 @@ import { supabase, updateUsername } from "../supabaseClient";
 import { useUser } from "../context/UserContext";
 
 function AccountPage() {
-  const { user } = useUser();
+  const { user, guest, signOutGuest } = useUser();
 
   async function handleUpdateUsername(e) {
     e.preventDefault();
@@ -15,11 +15,14 @@ function AccountPage() {
   }
 
   async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Logout error:", error.message);
+    if (guest) {
+      // clear guest session
+      signOutGuest();
+      console.log("Guest signed out");
     } else {
-      console.log("User signed out");
+      const { error } = await supabase.auth.signOut();
+      if (error) console.error("Logout error:", error.message);
+      else console.log("User signed out");
     }
     window.location.reload();
   }

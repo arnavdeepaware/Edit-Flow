@@ -2,10 +2,12 @@ import React from "react";
 import { useUser } from "../context/UserContext";
 
 function TokensPage() {
-  const { handleTokenChange } = useUser();
+  const { user, handleTokenChange } = useUser();
 
   const exchangeRate = 0.01;
   const options = [100, 500, 1000, 5000, 10000];
+
+  if (!user) return <div>Please sign in to purchase tokens.</div>;
 
   return (
     <div className="tokens-page">
